@@ -1,0 +1,44 @@
+{
+  "Doctors": [
+    {
+      "Id": "f59b10a6-628a-4bdb-b37c-7cac13fef536",
+      "FullName": "\u041F\u0435\u0442\u0440\u0435\u043D\u043A\u043E \u041E\u043B\u044C\u0433\u0430 \u0406\u0432\u0430\u043D\u0456\u0432\u043D\u0430",
+      "Specialization": "\u0422\u0435\u0440\u0430\u043F\u0435\u0432\u0442",
+      "Rating": 4.8,
+      "ConsultationFee": 500,
+      "PhotoUrl": "https://i.pravatar.cc/150?u=doc16"
+    },
+    {
+      "Id": "e0328e37-9ab3-43fe-9dd7-37992a739cf3",
+      "FullName": "\u041A\u043E\u0432\u0430\u043B\u044C\u0447\u0443\u043A \u0410\u043D\u0434\u0440\u0456\u0439 \u041F\u0435\u0442\u0440\u043E\u0432\u0438\u0447",
+      "Specialization": "\u041A\u0430\u0440\u0434\u0456\u043E\u043B\u043E\u0433",
+      "Rating": 4.9,
+      "ConsultationFee": 750,
+      "PhotoUrl": "https://i.pravatar.cc/150?u=doc4"
+    },
+    {
+      "Id": "93db03f7-dd76-4223-ace9-fdcb87e4bb9a",
+      "FullName": "\u0428\u0435\u0432\u0447\u0435\u043D\u043A\u043E \u041C\u0430\u0440\u0456\u044F \u0412\u0430\u0441\u0438\u043B\u0456\u0432\u043D\u0430",
+      "Specialization": "\u041F\u0435\u0434\u0456\u0430\u0442\u0440",
+      "Rating": 4.7,
+      "ConsultationFee": 600,
+      "PhotoUrl": "https://i.pravatar.cc/150?u=doc15"
+    }
+  ],
+  "Appointments": [
+    {
+      "Id": "11d22282-77b5-4925-88ce-15c6ce11e4dc",
+      "DoctorId": "f59b10a6-628a-4bdb-b37c-7cac13fef536",
+      "DoctorFullName": "\u041F\u0435\u0442\u0440\u0435\u043D\u043A\u043E \u041E\u043B\u044C\u0433\u0430 \u0406\u0432\u0430\u043D\u0456\u0432\u043D\u0430",
+      "AppointmentTime": "2025-11-06T02:30:05.0318073+02:00",
+      "Status": 0
+    },
+    {
+      "Id": "36e731f9-5b6b-4c44-ba2d-7e4cd91302cf",
+      "DoctorId": "f59b10a6-628a-4bdb-b37c-7cac13fef536",
+      "DoctorFullName": "\u041F\u0435\u0442\u0440\u0435\u043D\u043A\u043E \u041E\u043B\u044C\u0433\u0430 \u0406\u0432\u0430\u043D\u0456\u0432\u043D\u0430",
+      "AppointmentTime": "2025-11-20T00:00:00",
+      "Status": 0
+    }
+  ]
+}

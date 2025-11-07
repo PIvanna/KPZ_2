@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "KPZ_2/1.0.0": {
+        "dependencies": {
+          "Riok.Mapperly": "4.3.0"
+        },
+        "runtime": {
+          "KPZ_2.dll": {}
+        }
+      },
+      "Riok.Mapperly/4.3.0": {
+        "runtime": {
+          "lib/netstandard2.0/Riok.Mapperly.Abstractions.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "KPZ_2/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Riok.Mapperly/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9M60fNhHAx4Gzm3ebavQn60UT8uuFBM9kSfhepEWlEMoPhd/4mAdJAtBZmi+6RZJWTHil/VC/DrzihhPq39xhg==",
+      "path": "riok.mapperly/4.3.0",
+      "hashPath": "riok.mapperly.4.3.0.nupkg.sha512"
+    }
+  }
+}

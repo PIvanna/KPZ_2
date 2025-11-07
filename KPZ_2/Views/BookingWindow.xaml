@@ -1,0 +1,31 @@
+<Window x:Class="MedTeleHelp.WPF.Views.BookingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:userControls="clr-namespace:MedTeleHelp.WPF.UserControls"
+        mc:Ignorable="d"
+        Title="Запис на прийом" Height="450" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Підтвердження запису" Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center"/>
+            
+            <userControls:DoctorProfileCard Doctor="{Binding SelectedDoctor}" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Оберіть бажану дату та час:" Margin="0,0,0,5"/>
+            <DatePicker SelectedDate="{Binding SelectedDateTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"/>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Підтвердити" 
+                        Command="{Binding ConfirmBookingCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Width="120" Margin="0,0,10,0"/>
+                <Button Content="Скасувати" 
+                        Command="{Binding CancelBookingCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Width="120" Background="Gray"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
