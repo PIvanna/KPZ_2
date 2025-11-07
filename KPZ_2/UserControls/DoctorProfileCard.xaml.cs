@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
-using MedTeleHelp.WPF.Models;
+using KPZ_2.Models;
 
-namespace MedTeleHelp.WPF.UserControls
+namespace KPZ_2.UserControls
 {
     public partial class DoctorProfileCard : UserControl
     {

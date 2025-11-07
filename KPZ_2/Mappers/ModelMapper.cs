@@ -1,9 +1,8 @@
+using KPZ_2.DTOs;
+using KPZ_2.Models;
 using Riok.Mapperly.Abstractions;
-using MedTeleHelp.WPF.DTOs;
-using MedTeleHelp.WPF.Models;
-using System.Collections.Generic;
 
-namespace MedTeleHelp.WPF.Mappers
+namespace KPZ_2.Mappers
 {
     [Mapper]
     public static partial class ModelMapper

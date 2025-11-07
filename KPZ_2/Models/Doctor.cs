@@ -1,6 +1,7 @@
-using MedTeleHelp.WPF.ViewModels.Base;
+using System;
+using KPZ_2.ViewModels.Base;
 
-namespace MedTeleHelp.WPF.Models
+namespace KPZ_2.Models
 {
     public class Doctor : ViewModelBase
     {

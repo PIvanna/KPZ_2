@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MedTeleHelp.WPF.DTOs
+namespace KPZ_2.DTOs
 {
     public class DataDto
     {
