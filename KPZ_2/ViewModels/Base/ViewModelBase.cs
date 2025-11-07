@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace MedTeleHelp.WPF.ViewModels.Base
+namespace KPZ_2.ViewModels.Base
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {

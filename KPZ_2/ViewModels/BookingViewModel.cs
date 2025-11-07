@@ -1,9 +1,9 @@
 using System;
 using System.Windows.Input;
-using MedTeleHelp.WPF.Models;
-using MedTeleHelp.WPF.ViewModels.Base;
+using KPZ_2.Models;
+using KPZ_2.ViewModels.Base;
 
-namespace MedTeleHelp.WPF.ViewModels
+namespace KPZ_2.ViewModels
 {
     public class BookingViewModel : ViewModelBase
     {

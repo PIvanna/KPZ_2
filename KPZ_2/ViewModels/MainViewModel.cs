@@ -2,15 +2,16 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using MedTeleHelp.WPF.Models;
-using MedTeleHelp.WPF.Models.Enums;
-using MedTeleHelp.WPF.Services;
-using MedTeleHelp.WPF.ViewModels.Base;
-using MedTeleHelp.WPF.Views;
+using KPZ_2.Models;
+using KPZ_2.Models.Enums;
+using KPZ_2.Services;
+using KPZ_2.ViewModels.Base;
+using KPZ_2.Views;
 
-namespace MedTeleHelp.WPF.ViewModels
+namespace KPZ_2.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {

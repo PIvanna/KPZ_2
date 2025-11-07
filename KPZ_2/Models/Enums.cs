@@ -1,4 +1,4 @@
-namespace MedTeleHelp.WPF.Models.Enums
+namespace KPZ_2.Models.Enums
 {
     public enum AppointmentStatus
     {

@@ -2,9 +2,9 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using MedTeleHelp.WPF.Models.Enums;
+using KPZ_2.Models.Enums;
 
-namespace MedTeleHelp.WPF.Converters
+namespace KPZ_2.Converters
 {
     public class StatusToBrushConverter : IValueConverter
     {

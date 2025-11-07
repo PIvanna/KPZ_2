@@ -1,7 +1,7 @@
 using System;
-using MedTeleHelp.WPF.Models.Enums;
+using KPZ_2.Models.Enums;
 
-namespace MedTeleHelp.WPF.Models
+namespace KPZ_2.Models
 {
     public class Appointment
     {

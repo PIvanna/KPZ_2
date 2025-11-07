@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace MedTeleHelp.WPF.ViewModels.Base
+namespace KPZ_2.ViewModels.Base
 {
     public class RelayCommand : ICommand
     {

@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq; 
 using System.Text.Json;
 using System.Threading.Tasks;
-using MedTeleHelp.WPF.DTOs;
-using MedTeleHelp.WPF.Mappers;
-using MedTeleHelp.WPF.Models;
+using KPZ_2.DTOs;
+using KPZ_2.Mappers;
+using KPZ_2.Models;
 
-namespace MedTeleHelp.WPF.Services
+namespace KPZ_2.Services
 {
     public class FileDataService
     {

@@ -1,5 +1,6 @@
 using System.Windows;
-namespace MedTeleHelp.WPF.Views
+
+namespace KPZ_2.Views
 {
     public partial class BookingWindow : Window
     {
