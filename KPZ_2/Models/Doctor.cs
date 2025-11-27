@@ -45,5 +45,12 @@ namespace MedTeleHelp.WPF.Models
             get => _photoUrl;
             set => Set(ref _photoUrl, value);
         }
+        
+        private string _email;
+        public string Email
+        {
+            get => _email;
+            set => Set(ref _email, value);
+        }
     }
 }

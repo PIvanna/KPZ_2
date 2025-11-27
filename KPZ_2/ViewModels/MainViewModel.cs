@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MedTeleHelp.WPF.Models;
@@ -14,12 +14,27 @@ namespace MedTeleHelp.WPF.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly FileDataService _dataService;
-        private Doctor _selectedDoctor;
+        private readonly IDataService _dataService;
         
+        public MainViewModel()
+        {
+            _dataService = new AdoNetDataService();
+            // _dataService = new EfDataService();
+
+            LoadDataCommand = new RelayCommand(async _ => await LoadData());
+            OpenBookingWindowCommand = new RelayCommand(OpenBookingWindow, _ => SelectedDoctor != null);
+            
+            AddDoctorCommand = new RelayCommand(async _ => await AddDoctor());
+            DeleteDoctorCommand = new RelayCommand(async _ => await DeleteDoctor(), _ => SelectedDoctor != null);
+            DeleteAppointmentCommand = new RelayCommand(async p => await DeleteAppointment(p));
+
+            LoadDataCommand.Execute(null);
+        }
+
         public ObservableCollection<Doctor> Doctors { get; } = new ObservableCollection<Doctor>();
         public ObservableCollection<Appointment> Appointments { get; } = new ObservableCollection<Appointment>();
 
+        private Doctor _selectedDoctor;
         public Doctor SelectedDoctor
         {
             get => _selectedDoctor;
@@ -27,51 +42,71 @@ namespace MedTeleHelp.WPF.ViewModels
         }
 
         public ICommand LoadDataCommand { get; }
-        public ICommand SaveDataCommand { get; }
         public ICommand OpenBookingWindowCommand { get; }
-
-        public MainViewModel()
-        {
-            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data.json");
-            _dataService = new FileDataService(filePath);
-
-            LoadDataCommand = new RelayCommand(async _ => await LoadData());
-            SaveDataCommand = new RelayCommand(async _ => await SaveData());
-            OpenBookingWindowCommand = new RelayCommand(OpenBookingWindow, _ => SelectedDoctor != null);
-
-            LoadDataCommand.Execute(null);
-        }
+        public ICommand AddDoctorCommand { get; }
+        public ICommand DeleteDoctorCommand { get; }
+        public ICommand DeleteAppointmentCommand { get; }
 
         private async Task LoadData()
         {
-            var (loadedDoctors, loadedAppointments) = await _dataService.LoadDataAsync();
-
             Doctors.Clear();
             Appointments.Clear();
 
+            var loadedDoctors = await _dataService.GetAllDoctorsAsync();
+            var loadedAppointments = await _dataService.GetAllAppointmentsAsync();
+
             if (!loadedDoctors.Any())
             {
-                CreateInitialData();
+                await SeedData();
+                loadedDoctors = await _dataService.GetAllDoctorsAsync();
             }
-            else
-            {
-                foreach (var doctor in loadedDoctors) Doctors.Add(doctor);
-                foreach (var app in loadedAppointments) Appointments.Add(app);
-            }
+
+            foreach (var doc in loadedDoctors) Doctors.Add(doc);
+            foreach (var app in loadedAppointments) Appointments.Add(app);
             
             SelectedDoctor = Doctors.FirstOrDefault();
         }
 
-        private async Task SaveData()
+        private async Task AddDoctor()
         {
-            try
+            var newDoc = new Doctor
             {
-                await _dataService.SaveDataAsync(Doctors, Appointments);
-                MessageBox.Show("Дані успішно збережено!", "Збереження", MessageBoxButton.OK, MessageBoxImage.Information);
+                Id = Guid.NewGuid(),
+                FullName = $"Новий Лікар {Doctors.Count + 1}",
+                Specialization = "Терапевт",
+                Rating = 5.0,
+                ConsultationFee = 400,
+                PhotoUrl = "https://i.pravatar.cc/150",
+                Email = "new.doctor@example.com",
+            };
+            
+            await _dataService.AddDoctorAsync(newDoc);
+            Doctors.Add(newDoc);
+        }
+
+        private async Task DeleteDoctor()
+        {
+            if (SelectedDoctor == null) return;
+            
+            var result = MessageBox.Show($"Видалити {SelectedDoctor.FullName}?", "Підтвердження", MessageBoxButton.YesNo);
+            if (result == MessageBoxResult.Yes)
+            {
+                await _dataService.DeleteDoctorAsync(SelectedDoctor.Id);
+                Doctors.Remove(SelectedDoctor);
+                SelectedDoctor = null;
             }
-            catch (Exception ex)
+        }
+
+        private async Task DeleteAppointment(object parameter)
+        {
+            if (parameter is Appointment app)
             {
-                MessageBox.Show($"Сталася помилка під час збереження: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                var result = MessageBox.Show("Скасувати запис?", "Підтвердження", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _dataService.DeleteAppointmentAsync(app.Id);
+                    Appointments.Remove(app);
+                }
             }
         }
 
@@ -90,15 +125,25 @@ namespace MedTeleHelp.WPF.ViewModels
                     AppointmentTime = bookingViewModel.SelectedDateTime,
                     Status = AppointmentStatus.Scheduled
                 };
-                Appointments.Add(newAppointment);
+                
+                _TaskHelper.FireAndForget(async () => 
+                {
+                    await _dataService.AddAppointmentAsync(newAppointment);
+                    Application.Current.Dispatcher.Invoke(() => Appointments.Add(newAppointment));
+                });
             }
         }
 
-        private void CreateInitialData()
+        private async Task SeedData()
         {
-            Doctors.Add(new Doctor { Id = Guid.NewGuid(), FullName = "Петренко Ольга Іванівна", Specialization = "Терапевт", Rating = 4.8, ConsultationFee = 500, PhotoUrl="https://i.pravatar.cc/150?u=doc16" });
-            Doctors.Add(new Doctor { Id = Guid.NewGuid(), FullName = "Ковальчук Андрій Петрович", Specialization = "Кардіолог", Rating = 4.9, ConsultationFee = 750, PhotoUrl="https://i.pravatar.cc/150?u=doc4" });
-            Doctors.Add(new Doctor { Id = Guid.NewGuid(), FullName = "Шевченко Марія Василівна", Specialization = "Педіатр", Rating = 4.7, ConsultationFee = 600, PhotoUrl="https://i.pravatar.cc/150?u=doc15" });
+             var doc1 = new Doctor { Id = Guid.NewGuid(), FullName = "Петренко Ольга", Specialization = "Терапевт", Rating = 4.8, ConsultationFee = 500, Email = "petrenko@example.com",   PhotoUrl = "https://i.pravatar.cc/150?u=1"  };
+             await _dataService.AddDoctorAsync(doc1);
+        }
+    }
+    
+    public static class _TaskHelper {
+        public static async void FireAndForget(Func<Task> func) {
+            try { await func(); } catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
     }
 }
