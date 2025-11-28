@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient; 
 using MedTeleHelp.WPF.Data;
 using MedTeleHelp.WPF.Models;
 
@@ -58,6 +59,14 @@ namespace MedTeleHelp.WPF.Services
                 _context.Appointments.Remove(app);
                 await _context.SaveChangesAsync();
             }
+        }
+        
+        public async Task<List<Doctor>> GetDoctorsByRatingProcedure(double minRating)
+        {
+            return await _context.Doctors
+                .FromSqlRaw("EXEC GetDoctorsByMinRating @MinRating", new SqlParameter("@MinRating", minRating))
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

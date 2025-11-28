@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using MedTeleHelp.WPF.Models;
 using MedTeleHelp.WPF.Models.Enums;
@@ -10,6 +11,20 @@ namespace MedTeleHelp.WPF.Services
     public class AdoNetDataService : IDataService
     {
         private readonly string _connectionString = "Server=MSI\\SQLEXPRESS;Database=MedTeleHelpDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
+        private Doctor ReadDoctor(SqlDataReader reader)
+        {
+            return new Doctor
+            {
+                Id = reader.GetGuid(0),
+                FullName = reader.GetString(1),
+                Specialization = reader.GetString(2),
+                Rating = reader.GetDouble(3),
+                ConsultationFee = reader.GetDecimal(4),
+                PhotoUrl = reader.IsDBNull(5) ? null : reader.GetString(5),
+                Email = reader.IsDBNull(6) ? null : reader.GetString(6)
+            };
+        }
 
         public async Task<List<Doctor>> GetAllDoctorsAsync()
         {
@@ -22,16 +37,7 @@ namespace MedTeleHelp.WPF.Services
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                list.Add(new Doctor
-                {
-                    Id = reader.GetGuid(0),
-                    FullName = reader.GetString(1),
-                    Specialization = reader.GetString(2),
-                    Rating = reader.GetDouble(3),
-                    ConsultationFee = reader.GetDecimal(4),
-                    PhotoUrl = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    Email = reader.IsDBNull(6) ? null : reader.GetString(6) 
-                });
+                list.Add(ReadDoctor(reader));
             }
             return list;
         }
@@ -40,9 +46,7 @@ namespace MedTeleHelp.WPF.Services
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            
             var sql = "INSERT INTO Doctors (Id, FullName, Specialization, Rating, ConsultationFee, PhotoUrl, Email) VALUES (@Id, @Name, @Spec, @Rate, @Fee, @Photo, @Email)";
-            
             var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", doctor.Id);
             cmd.Parameters.AddWithValue("@Name", doctor.FullName);
@@ -50,8 +54,7 @@ namespace MedTeleHelp.WPF.Services
             cmd.Parameters.AddWithValue("@Rate", doctor.Rating);
             cmd.Parameters.AddWithValue("@Fee", doctor.ConsultationFee);
             cmd.Parameters.AddWithValue("@Photo", (object)doctor.PhotoUrl ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value); 
-            
+            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -59,9 +62,7 @@ namespace MedTeleHelp.WPF.Services
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            
             var sql = "UPDATE Doctors SET FullName=@Name, Specialization=@Spec, Rating=@Rate, ConsultationFee=@Fee, PhotoUrl=@Photo, Email=@Email WHERE Id=@Id";
-            
             var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", doctor.Id);
             cmd.Parameters.AddWithValue("@Name", doctor.FullName);
@@ -69,8 +70,7 @@ namespace MedTeleHelp.WPF.Services
             cmd.Parameters.AddWithValue("@Rate", doctor.Rating);
             cmd.Parameters.AddWithValue("@Fee", doctor.ConsultationFee);
             cmd.Parameters.AddWithValue("@Photo", (object)doctor.PhotoUrl ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value); 
-            
+            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -125,6 +125,24 @@ namespace MedTeleHelp.WPF.Services
             var cmd = new SqlCommand("DELETE FROM Appointments WHERE Id = @Id", conn);
             cmd.Parameters.AddWithValue("@Id", id);
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<Doctor>> GetDoctorsByRatingProcedure(double minRating)
+        {
+            var list = new List<Doctor>();
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var cmd = new SqlCommand("GetDoctorsByMinRating", conn);
+            cmd.CommandType = CommandType.StoredProcedure; 
+            cmd.Parameters.AddWithValue("@MinRating", minRating);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(ReadDoctor(reader));
+            }
+            return list;
         }
     }
 }

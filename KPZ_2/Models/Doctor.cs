@@ -52,5 +52,11 @@ namespace MedTeleHelp.WPF.Models
             get => _email;
             set => Set(ref _email, value);
         }
+        
+        public DoctorLicense? License { get; set; }
+
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
+        public ICollection<DoctorPatient> DoctorPatients { get; set; } = new List<DoctorPatient>();
     }
 }

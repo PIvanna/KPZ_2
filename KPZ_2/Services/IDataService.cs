@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MedTeleHelp.WPF.Models;
@@ -14,5 +15,8 @@ namespace MedTeleHelp.WPF.Services
         Task<List<Appointment>> GetAllAppointmentsAsync();
         Task AddAppointmentAsync(Appointment appointment);
         Task DeleteAppointmentAsync(Guid id);
+
+        // НОВИЙ МЕТОД: Виклик збереженої процедури
+        Task<List<Doctor>> GetDoctorsByRatingProcedure(double minRating);
     }
 }

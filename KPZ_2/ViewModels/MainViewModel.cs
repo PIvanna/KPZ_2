@@ -16,17 +16,28 @@ namespace MedTeleHelp.WPF.ViewModels
     {
         private readonly IDataService _dataService;
         
+        private double _filterRating;
+        public double FilterRating
+        {
+            get => _filterRating;
+            set => Set(ref _filterRating, value);
+        }
+
         public MainViewModel()
         {
-            _dataService = new AdoNetDataService();
             // _dataService = new EfDataService();
+            
+            _dataService = new AdoNetDataService();
+
 
             LoadDataCommand = new RelayCommand(async _ => await LoadData());
             OpenBookingWindowCommand = new RelayCommand(OpenBookingWindow, _ => SelectedDoctor != null);
-            
             AddDoctorCommand = new RelayCommand(async _ => await AddDoctor());
             DeleteDoctorCommand = new RelayCommand(async _ => await DeleteDoctor(), _ => SelectedDoctor != null);
             DeleteAppointmentCommand = new RelayCommand(async p => await DeleteAppointment(p));
+            
+            FilterDoctorsCommand = new RelayCommand(async _ => await FilterDoctors());
+            ResetFilterCommand = new RelayCommand(async _ => await LoadData());
 
             LoadDataCommand.Execute(null);
         }
@@ -46,6 +57,9 @@ namespace MedTeleHelp.WPF.ViewModels
         public ICommand AddDoctorCommand { get; }
         public ICommand DeleteDoctorCommand { get; }
         public ICommand DeleteAppointmentCommand { get; }
+        
+        public ICommand FilterDoctorsCommand { get; }
+        public ICommand ResetFilterCommand { get; }
 
         private async Task LoadData()
         {
@@ -67,6 +81,20 @@ namespace MedTeleHelp.WPF.ViewModels
             SelectedDoctor = Doctors.FirstOrDefault();
         }
 
+        private async Task FilterDoctors()
+        {
+            try 
+            {
+                var filtered = await _dataService.GetDoctorsByRatingProcedure(FilterRating);
+                Doctors.Clear();
+                foreach (var doc in filtered) Doctors.Add(doc);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при виконанні процедури: {ex.Message}");
+            }
+        }
+
         private async Task AddDoctor()
         {
             var newDoc = new Doctor
@@ -74,10 +102,10 @@ namespace MedTeleHelp.WPF.ViewModels
                 Id = Guid.NewGuid(),
                 FullName = $"Новий Лікар {Doctors.Count + 1}",
                 Specialization = "Терапевт",
-                Rating = 5.0,
+                Rating = 4.5, 
                 ConsultationFee = 400,
                 PhotoUrl = "https://i.pravatar.cc/150",
-                Email = "new.doctor@example.com",
+                Email = "doctor@example.com"
             };
             
             await _dataService.AddDoctorAsync(newDoc);
@@ -136,7 +164,7 @@ namespace MedTeleHelp.WPF.ViewModels
 
         private async Task SeedData()
         {
-             var doc1 = new Doctor { Id = Guid.NewGuid(), FullName = "Петренко Ольга", Specialization = "Терапевт", Rating = 4.8, ConsultationFee = 500, Email = "petrenko@example.com",   PhotoUrl = "https://i.pravatar.cc/150?u=1"  };
+             var doc1 = new Doctor { Id = Guid.NewGuid(), FullName = "Петренко Ольга", Specialization = "Терапевт", Rating = 4.8, ConsultationFee = 500, Email="test@test.com", PhotoUrl="url" };
              await _dataService.AddDoctorAsync(doc1);
         }
     }

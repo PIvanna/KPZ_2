@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MedTeleHelp.API</name>
+    </assembly>
+    <members>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.GetAppointments">
+            <summary>
+            Отримати всі записи на прийом
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.GetAppointment(System.Guid)">
+            <summary>
+            Отримати конкретний запис за ID
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.CreateAppointment(MedTeleHelp.API.ViewModels.AppointmentCreateVm)">
+            <summary>
+            Створити новий запис до лікаря
+            </summary>
+            <remarks>
+            Потрібно передати ID лікаря та час. Ім'я лікаря підтягнеться автоматично.
+            </remarks>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.DeleteAppointment(System.Guid)">
+            <summary>
+            Скасувати (видалити) запис
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.DoctorsController.GetDoctors">
+            <summary>
+            Отримати список всіх лікарів
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.DoctorsController.GetDoctor(System.Guid)">
+            <summary>
+            Отримати лікаря за ID
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.DoctorsController.CreateDoctor(MedTeleHelp.API.ViewModels.DoctorCreateVm)">
+            <summary>
+            Створити нового лікаря
+            </summary>
+            <response code="201">Лікар створений успішно</response>
+            <response code="400">Помилка валідації моделі</response>
+        </member>
+    </members>
+</doc>

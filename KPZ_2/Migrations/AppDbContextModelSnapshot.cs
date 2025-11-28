@@ -43,7 +43,40 @@ namespace KPZ_2.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DoctorId");
+
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.AppointmentStatusLookup", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppointmentStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            StatusName = "Scheduled"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            StatusName = "Completed"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            StatusName = "Cancelled"
+                        });
                 });
 
             modelBuilder.Entity("MedTeleHelp.WPF.Models.Doctor", b =>
@@ -77,6 +110,118 @@ namespace KPZ_2.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Doctors");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.DoctorLicense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId")
+                        .IsUnique();
+
+                    b.ToTable("DoctorLicenses");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.DoctorPatient", b =>
+                {
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RegistrationDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("DoctorId", "PatientId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("DoctorPatients");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Patient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Appointment", b =>
+                {
+                    b.HasOne("MedTeleHelp.WPF.Models.Doctor", "Doctor")
+                        .WithMany("Appointments")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.DoctorLicense", b =>
+                {
+                    b.HasOne("MedTeleHelp.WPF.Models.Doctor", "Doctor")
+                        .WithOne("License")
+                        .HasForeignKey("MedTeleHelp.WPF.Models.DoctorLicense", "DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.DoctorPatient", b =>
+                {
+                    b.HasOne("MedTeleHelp.WPF.Models.Doctor", "Doctor")
+                        .WithMany("DoctorPatients")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedTeleHelp.WPF.Models.Patient", "Patient")
+                        .WithMany("DoctorPatients")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Doctor", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("DoctorPatients");
+
+                    b.Navigation("License");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Patient", b =>
+                {
+                    b.Navigation("DoctorPatients");
                 });
 #pragma warning restore 612, 618
         }

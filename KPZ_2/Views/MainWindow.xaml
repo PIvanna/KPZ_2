@@ -7,9 +7,9 @@
         xmlns:converters="clr-namespace:MedTeleHelp.WPF.Converters"
         xmlns:userControls="clr-namespace:MedTeleHelp.WPF.UserControls"
         mc:Ignorable="d"
-        Title="MedTeleHelp - Панель пацієнта" Height="600" Width="950"
+        Title="MedTeleHelp - Панель пацієнта" Height="600" Width="900"
         WindowStartupLocation="CenterScreen">
-
+    
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
@@ -17,7 +17,7 @@
     <Window.Resources>
         <converters:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
     </Window.Resources>
-
+    
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -27,6 +27,7 @@
         <Grid Grid.Column="0" Margin="0,0,10,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -34,59 +35,49 @@
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="Список лікарів" Style="{StaticResource HeaderTextStyle}" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                
-                <Button Command="{Binding AddDoctorCommand}" 
-                        Content="+" FontWeight="Bold" FontSize="16"
-                        Width="30" Height="30" 
-                        Background="ForestGreen" BorderBrush="DarkGreen"
-                        ToolTip="Додати нового лікаря (тест БД)"/>
-                
-                <Button Command="{Binding DeleteDoctorCommand}" 
-                        Content="-" FontWeight="Bold" FontSize="16"
-                        Width="30" Height="30" Margin="10,0,0,0"
-                        Background="Crimson" BorderBrush="DarkRed"
-                        ToolTip="Видалити обраного лікаря"/>
+                <Button Content="+" Command="{Binding AddDoctorCommand}" Width="30" Height="30" ToolTip="Додати лікаря" Background="Green"/>
+                <Button Content="-" Command="{Binding DeleteDoctorCommand}" Width="30" Height="30" Margin="5,0,0,0" ToolTip="Видалити вибраного" Background="Red"/>
             </StackPanel>
 
-            <DataGrid Grid.Row="1" ItemsSource="{Binding Doctors}"
+            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" Padding="5" Margin="0,0,0,10" CornerRadius="3">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Фільтр (Stored Proc): Рейтинг > " VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox Text="{Binding FilterRating}" Width="40" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
+                    <Button Content="Фільтрувати" Command="{Binding FilterDoctorsCommand}" Margin="0,0,5,0" Background="#FF007ACC"/>
+                    <Button Content="Скинути" Command="{Binding ResetFilterCommand}" Background="Gray"/>
+                </StackPanel>
+            </Border>
+            
+            <DataGrid Grid.Row="2" ItemsSource="{Binding Doctors}"
                       SelectedItem="{Binding SelectedDoctor}"
                       AutoGenerateColumns="False" IsReadOnly="True"
-                      SelectionMode="Single"
-                      BorderThickness="1" BorderBrush="LightGray">
+                      SelectionMode="Single">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ПІБ" Binding="{Binding FullName}" Width="*"/>
                     <DataGridTextColumn Header="Спеціалізація" Binding="{Binding Specialization}" Width="*"/>
                     <DataGridTextColumn Header="Рейтинг" Binding="{Binding Rating}" Width="Auto"/>
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="Auto"/>
                 </DataGrid.Columns>
             </DataGrid>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,10">
-                <TextBlock Text="Мої записи на прийом" Style="{StaticResource HeaderTextStyle}"/>
-                <TextBlock Text="(ПКМ для скасування)" FontSize="12" Foreground="Gray" VerticalAlignment="Center" Margin="10,0,0,5"/>
-            </StackPanel>
-
-            <DataGrid Grid.Row="3" ItemsSource="{Binding Appointments}"
-                      AutoGenerateColumns="False" IsReadOnly="True"
-                      Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
-                
+            <TextBlock Grid.Row="3" Text="Мої записи на прийом" Style="{StaticResource HeaderTextStyle}" Margin="0,20,0,10"/>
+            
+            <DataGrid Grid.Row="4" ItemsSource="{Binding Appointments}"
+                      AutoGenerateColumns="False" IsReadOnly="True">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Скасувати запис" 
-                                  Command="{Binding PlacementTarget.Tag.DeleteAppointmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding}"
-                                  Foreground="Red"/>
+                                  Command="{Binding DeleteAppointmentCommand}" 
+                                  CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
-                
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Лікар" Binding="{Binding DoctorFullName}" Width="*"/>
                     <DataGridTextColumn Header="Дата та час" Binding="{Binding AppointmentTime, StringFormat='dd.MM.yyyy HH:mm'}" Width="*"/>
                     <DataGridTemplateColumn Header="Статус" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Status}" 
-                                           FontWeight="Bold" 
-                                           Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"/>
+                                <TextBlock Text="{Binding Status}" FontWeight="Bold" Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -96,20 +87,10 @@
 
         <StackPanel Grid.Column="1" Margin="10,0,0,0">
             <TextBlock Text="Деталі лікаря" Style="{StaticResource HeaderTextStyle}"/>
-
+            
             <userControls:DoctorProfileCard Doctor="{Binding SelectedDoctor}" Margin="0,0,0,20"/>
-
-            <Button Content="Записатись на прийом" 
-                    Command="{Binding OpenBookingWindowCommand}" 
-                    Height="40" FontSize="16"
-                /> 
-
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,30,0,0">
-                <TextBlock Text="Робота з даними:" Foreground="Gray" Margin="0,0,0,5"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Оновити дані" Command="{Binding LoadDataCommand}" Width="120" Margin="0,0,10,0"/>
-                </StackPanel>
-            </StackPanel>
+            
+            <Button Content="Записатись на прийом" Command="{Binding OpenBookingWindowCommand}" Height="40" FontSize="16"/>
         </StackPanel>
     </Grid>
 </Window>

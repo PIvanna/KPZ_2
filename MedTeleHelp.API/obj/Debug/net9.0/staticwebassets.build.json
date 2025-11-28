@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "O3h7edI9h50Dp34fN7QOqKpGizNbr9nKpW7A1e43jJo=",
+  "Source": "MedTeleHelp.API",
+  "BasePath": "_content/MedTeleHelp.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
