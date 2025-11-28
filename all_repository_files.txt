@@ -1,0 +1,1512 @@
+KPZ_2.sln
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPZ_2", "KPZ_2\KPZ_2.csproj", "{7394C578-3831-47A8-B4A4-169D5B48787A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7394C578-3831-47A8-B4A4-169D5B48787A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7394C578-3831-47A8-B4A4-169D5B48787A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7394C578-3831-47A8-B4A4-169D5B48787A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7394C578-3831-47A8-B4A4-169D5B48787A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
+
+KPZ_2/KPZ_2.csproj
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Riok.Mapperly" Version="4.3.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    </ItemGroup>
+
+</Project>
+
+KPZ_2/App.xaml
+<Application x:Class="MedTeleHelp.WPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF005A9E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Application.Resources>
+</Application>
+
+KPZ_2/App.xaml.cs
+using System.Configuration;
+using System.Data;
+using System.Windows;
+
+namespace KPZ_2;
+
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
+{
+}
+
+KPZ_2/AssemblyInfo.cs
+using System.Windows;
+
+[assembly: ThemeInfo(
+    ResourceDictionaryLocation.None, //where theme specific resource dictionaries are located
+    //(used if a resource is not found in the page,
+    // or application resource dictionaries)
+    ResourceDictionaryLocation.SourceAssembly //where the generic resource dictionary is located
+    //(used if a resource is not found in the page,
+    // app, or any theme specific resource dictionaries)
+)]
+
+KPZ_2/Data/AppDbContext.cs
+using Microsoft.EntityFrameworkCore;
+using MedTeleHelp.WPF.Models;
+
+namespace MedTeleHelp.WPF.Data
+{
+    public class AppDbContext : DbContext
+    {
+        public DbSet<Doctor> Doctors { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=MSI\\SQLEXPRESS;Database=MedTeleHelpDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true");            
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Doctor>()
+                .Property(d => d.ConsultationFee)
+                .HasColumnType("decimal(18,2)");
+        }
+    }
+}
+
+KPZ_2/Models/Appointment.cs
+using System;
+using MedTeleHelp.WPF.Models.Enums;
+
+namespace MedTeleHelp.WPF.Models
+{
+    public class Appointment
+    {
+        public Guid Id { get; set; }
+        public Guid DoctorId { get; set; }
+        public string DoctorFullName { get; set; }
+        public DateTime AppointmentTime { get; set; }
+        public AppointmentStatus Status { get; set; }
+    }
+}
+
+KPZ_2/Models/Doctor.cs
+using MedTeleHelp.WPF.ViewModels.Base;
+
+namespace MedTeleHelp.WPF.Models
+{
+    public class Doctor : ViewModelBase
+    {
+        private Guid _id;
+        public Guid Id
+        {
+            get => _id;
+            set => Set(ref _id, value);
+        }
+
+        private string _fullName;
+        public string FullName
+        {
+            get => _fullName;
+            set => Set(ref _fullName, value);
+        }
+
+        private string _specialization;
+        public string Specialization
+        {
+            get => _specialization;
+            set => Set(ref _specialization, value);
+        }
+
+        private double _rating;
+        public double Rating
+        {
+            get => _rating;
+            set => Set(ref _rating, value);
+        }
+        
+        private decimal _consultationFee;
+        public decimal ConsultationFee
+        {
+            get => _consultationFee;
+            set => Set(ref _consultationFee, value);
+        }
+
+        private string _photoUrl;
+        public string PhotoUrl
+        {
+            get => _photoUrl;
+            set => Set(ref _photoUrl, value);
+        }
+        
+        private string _email;
+        public string Email
+        {
+            get => _email;
+            set => Set(ref _email, value);
+        }
+    }
+}
+
+KPZ_2/Models/Enums.cs
+namespace MedTeleHelp.WPF.Models.Enums
+{
+    public enum AppointmentStatus
+    {
+        Scheduled,
+        Completed,
+        Cancelled
+    }
+}
+
+KPZ_2/DTOs/AppointmentDto.cs
+using System;
+using MedTeleHelp.WPF.Models.Enums;
+
+namespace MedTeleHelp.WPF.DTOs
+{
+    public class AppointmentDto
+    {
+        public Guid Id { get; set; }
+        public Guid DoctorId { get; set; }
+        public string DoctorFullName { get; set; }
+        public DateTime AppointmentTime { get; set; }
+        public AppointmentStatus Status { get; set; }
+    }
+}
+
+KPZ_2/DTOs/DataDto.cs
+using System.Collections.Generic;
+
+namespace MedTeleHelp.WPF.DTOs
+{
+    public class DataDto
+    {
+        public List<DoctorDto> Doctors { get; set; }
+        public List<AppointmentDto> Appointments { get; set; }
+    }
+}
+
+KPZ_2/DTOs/DoctorDto.cs
+using System;
+
+namespace MedTeleHelp.WPF.DTOs
+{
+    public class DoctorDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; }
+        public string Specialization { get; set; }
+        public double Rating { get; set; }
+        public decimal ConsultationFee { get; set; }
+        public string PhotoUrl { get; set; }
+    }
+}
+
+KPZ_2/Mappers/ModelMapper.cs
+using Riok.Mapperly.Abstractions;
+using MedTeleHelp.WPF.DTOs;
+using MedTeleHelp.WPF.Models;
+using System.Collections.Generic;
+
+namespace MedTeleHelp.WPF.Mappers
+{
+    [Mapper]
+    public static partial class ModelMapper
+    {
+        public static partial DoctorDto ToDto(Doctor doctor);
+
+        public static partial AppointmentDto ToDto(Appointment appointment);
+
+        public static partial Doctor ToModel(DoctorDto doctorDto);
+        
+        public static partial Appointment ToModel(AppointmentDto appointmentDto);
+    }
+}
+
+KPZ_2/Services/AdoNetDataService.cs
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MedTeleHelp.WPF.Models;
+using MedTeleHelp.WPF.Models.Enums;
+using Microsoft.Data.SqlClient;
+
+namespace MedTeleHelp.WPF.Services
+{
+    public class AdoNetDataService : IDataService
+    {
+        private readonly string _connectionString = "Server=MSI\\SQLEXPRESS;Database=MedTeleHelpDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
+        public async Task<List<Doctor>> GetAllDoctorsAsync()
+        {
+            var list = new List<Doctor>();
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            var cmd = new SqlCommand("SELECT Id, FullName, Specialization, Rating, ConsultationFee, PhotoUrl, Email FROM Doctors", conn);
+            
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Doctor
+                {
+                    Id = reader.GetGuid(0),
+                    FullName = reader.GetString(1),
+                    Specialization = reader.GetString(2),
+                    Rating = reader.GetDouble(3),
+                    ConsultationFee = reader.GetDecimal(4),
+                    PhotoUrl = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    Email = reader.IsDBNull(6) ? null : reader.GetString(6) 
+                });
+            }
+            return list;
+        }
+
+        public async Task AddDoctorAsync(Doctor doctor)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            var sql = "INSERT INTO Doctors (Id, FullName, Specialization, Rating, ConsultationFee, PhotoUrl, Email) VALUES (@Id, @Name, @Spec, @Rate, @Fee, @Photo, @Email)";
+            
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", doctor.Id);
+            cmd.Parameters.AddWithValue("@Name", doctor.FullName);
+            cmd.Parameters.AddWithValue("@Spec", doctor.Specialization);
+            cmd.Parameters.AddWithValue("@Rate", doctor.Rating);
+            cmd.Parameters.AddWithValue("@Fee", doctor.ConsultationFee);
+            cmd.Parameters.AddWithValue("@Photo", (object)doctor.PhotoUrl ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value); 
+            
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task UpdateDoctorAsync(Doctor doctor)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            var sql = "UPDATE Doctors SET FullName=@Name, Specialization=@Spec, Rating=@Rate, ConsultationFee=@Fee, PhotoUrl=@Photo, Email=@Email WHERE Id=@Id";
+            
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", doctor.Id);
+            cmd.Parameters.AddWithValue("@Name", doctor.FullName);
+            cmd.Parameters.AddWithValue("@Spec", doctor.Specialization);
+            cmd.Parameters.AddWithValue("@Rate", doctor.Rating);
+            cmd.Parameters.AddWithValue("@Fee", doctor.ConsultationFee);
+            cmd.Parameters.AddWithValue("@Photo", (object)doctor.PhotoUrl ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Email", (object)doctor.Email ?? DBNull.Value); 
+            
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteDoctorAsync(Guid id)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var cmd = new SqlCommand("DELETE FROM Doctors WHERE Id = @Id", conn);
+            cmd.Parameters.AddWithValue("@Id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<Appointment>> GetAllAppointmentsAsync()
+        {
+            var list = new List<Appointment>();
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var cmd = new SqlCommand("SELECT Id, DoctorId, DoctorFullName, AppointmentTime, Status FROM Appointments", conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Appointment
+                {
+                    Id = reader.GetGuid(0),
+                    DoctorId = reader.GetGuid(1),
+                    DoctorFullName = reader.GetString(2),
+                    AppointmentTime = reader.GetDateTime(3),
+                    Status = (AppointmentStatus)reader.GetInt32(4)
+                });
+            }
+            return list;
+        }
+
+        public async Task AddAppointmentAsync(Appointment appointment)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = "INSERT INTO Appointments (Id, DoctorId, DoctorFullName, AppointmentTime, Status) VALUES (@Id, @DocId, @DocName, @Time, @Status)";
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", appointment.Id);
+            cmd.Parameters.AddWithValue("@DocId", appointment.DoctorId);
+            cmd.Parameters.AddWithValue("@DocName", appointment.DoctorFullName);
+            cmd.Parameters.AddWithValue("@Time", appointment.AppointmentTime);
+            cmd.Parameters.AddWithValue("@Status", (int)appointment.Status);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteAppointmentAsync(Guid id)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var cmd = new SqlCommand("DELETE FROM Appointments WHERE Id = @Id", conn);
+            cmd.Parameters.AddWithValue("@Id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+    }
+}
+
+KPZ_2/Services/EfDataService.cs
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using MedTeleHelp.WPF.Data;
+using MedTeleHelp.WPF.Models;
+
+namespace MedTeleHelp.WPF.Services
+{
+    public class EfDataService : IDataService
+    {
+        private readonly AppDbContext _context;
+
+        public EfDataService()
+        {
+            _context = new AppDbContext();
+        }
+
+        public async Task<List<Doctor>> GetAllDoctorsAsync() => 
+            await _context.Doctors.AsNoTracking().ToListAsync();
+
+        public async Task AddDoctorAsync(Doctor doctor)
+        {
+            _context.Doctors.Add(doctor);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateDoctorAsync(Doctor doctor)
+        {
+            _context.Doctors.Update(doctor);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteDoctorAsync(Guid id)
+        {
+            var doc = await _context.Doctors.FindAsync(id);
+            if (doc != null)
+            {
+                _context.Doctors.Remove(doc);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Appointment>> GetAllAppointmentsAsync() => 
+            await _context.Appointments.AsNoTracking().ToListAsync();
+
+        public async Task AddAppointmentAsync(Appointment appointment)
+        {
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAppointmentAsync(Guid id)
+        {
+            var app = await _context.Appointments.FindAsync(id);
+            if (app != null)
+            {
+                _context.Appointments.Remove(app);
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}
+
+KPZ_2/Services/FileDataService.cs
+using System.Collections.Generic;
+using System.IO;
+using System.Linq; 
+using System.Text.Json;
+using System.Threading.Tasks;
+using MedTeleHelp.WPF.DTOs;
+using MedTeleHelp.WPF.Mappers;
+using MedTeleHelp.WPF.Models;
+
+namespace MedTeleHelp.WPF.Services
+{
+    public class FileDataService
+    {
+        private readonly string _filePath;
+
+        public FileDataService(string filePath) { _filePath = filePath; }
+
+        public async Task<(List<Doctor> Doctors, List<Appointment> Appointments)> LoadDataAsync()
+        {
+            if (!File.Exists(_filePath))
+            {
+                return (new List<Doctor>(), new List<Appointment>());
+            }
+
+            var json = await File.ReadAllTextAsync(_filePath);
+            var dto = JsonSerializer.Deserialize<DataDto>(json);
+
+            var doctors = dto?.Doctors?.Select(ModelMapper.ToModel).ToList() ?? new List<Doctor>();
+            var appointments = dto?.Appointments?.Select(ModelMapper.ToModel).ToList() ?? new List<Appointment>();
+
+            return (doctors, appointments);
+        }
+
+        public async Task SaveDataAsync(IEnumerable<Doctor> doctors, IEnumerable<Appointment> appointments)
+        {
+            var doctorsDto = doctors.Select(ModelMapper.ToDto).ToList();
+            var appointmentsDto = appointments.Select(ModelMapper.ToDto).ToList();
+
+            var dataToSave = new DataDto
+            {
+                Doctors = doctorsDto,
+                Appointments = appointmentsDto
+            };
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(dataToSave, options);
+            await File.WriteAllTextAsync(_filePath, json);
+        }
+    }
+}
+
+KPZ_2/Services/IDataService.cs
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MedTeleHelp.WPF.Models;
+
+namespace MedTeleHelp.WPF.Services
+{
+    public interface IDataService
+    {
+        Task<List<Doctor>> GetAllDoctorsAsync();
+        Task AddDoctorAsync(Doctor doctor);
+        Task UpdateDoctorAsync(Doctor doctor);
+        Task DeleteDoctorAsync(Guid id);
+
+        Task<List<Appointment>> GetAllAppointmentsAsync();
+        Task AddAppointmentAsync(Appointment appointment);
+        Task DeleteAppointmentAsync(Guid id);
+    }
+}
+
+KPZ_2/ViewModels/Base/RelayCommand.cs
+using System;
+using System.Windows.Input;
+
+namespace MedTeleHelp.WPF.ViewModels.Base
+{
+    public class RelayCommand : ICommand
+    {
+        private readonly Action<object> _execute;
+        private readonly Func<object, bool> _canExecute;
+
+        public event EventHandler CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
+
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object parameter) => _canExecute?.Invoke(parameter) ?? true;
+
+        public void Execute(object parameter) => _execute(parameter);
+    }
+}
+
+KPZ_2/ViewModels/Base/ViewModelBase.cs
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace MedTeleHelp.WPF.ViewModels.Base
+{
+    public abstract class ViewModelBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected virtual bool Set<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+    }
+}
+
+KPZ_2/ViewModels/BookingViewModel.cs
+using System;
+using System.Windows.Input;
+using MedTeleHelp.WPF.Models;
+using MedTeleHelp.WPF.ViewModels.Base;
+
+namespace MedTeleHelp.WPF.ViewModels
+{
+    public class BookingViewModel : ViewModelBase
+    {
+        public Doctor SelectedDoctor { get; }
+        
+        private DateTime _selectedDateTime = DateTime.Now.AddDays(1);
+        public DateTime SelectedDateTime
+        {
+            get => _selectedDateTime;
+            set => Set(ref _selectedDateTime, value);
+        }
+
+        public ICommand ConfirmBookingCommand { get; }
+        public ICommand CancelBookingCommand { get; }
+
+        public BookingViewModel(Doctor doctor)
+        {
+            SelectedDoctor = doctor ?? throw new ArgumentNullException(nameof(doctor));
+            ConfirmBookingCommand = new RelayCommand(p => CloseWindow(p, true));
+            CancelBookingCommand = new RelayCommand(p => CloseWindow(p, false));
+        }
+
+        private void CloseWindow(object parameter, bool dialogResult)
+        {
+            if (parameter is System.Windows.Window window)
+            {
+                window.DialogResult = dialogResult;
+                window.Close();
+            }
+        }
+    }
+}
+
+KPZ_2/ViewModels/MainViewModel.cs
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using MedTeleHelp.WPF.Models;
+using MedTeleHelp.WPF.Models.Enums;
+using MedTeleHelp.WPF.Services;
+using MedTeleHelp.WPF.ViewModels.Base;
+using MedTeleHelp.WPF.Views;
+
+namespace MedTeleHelp.WPF.ViewModels
+{
+    public class MainViewModel : ViewModelBase
+    {
+        private readonly IDataService _dataService;
+        
+        public MainViewModel()
+        {
+            _dataService = new AdoNetDataService();
+            // _dataService = new EfDataService();
+
+            LoadDataCommand = new RelayCommand(async _ => await LoadData());
+            OpenBookingWindowCommand = new RelayCommand(OpenBookingWindow, _ => SelectedDoctor != null);
+            
+            AddDoctorCommand = new RelayCommand(async _ => await AddDoctor());
+            DeleteDoctorCommand = new RelayCommand(async _ => await DeleteDoctor(), _ => SelectedDoctor != null);
+            DeleteAppointmentCommand = new RelayCommand(async p => await DeleteAppointment(p));
+
+            LoadDataCommand.Execute(null);
+        }
+
+        public ObservableCollection<Doctor> Doctors { get; } = new ObservableCollection<Doctor>();
+        public ObservableCollection<Appointment> Appointments { get; } = new ObservableCollection<Appointment>();
+
+        private Doctor _selectedDoctor;
+        public Doctor SelectedDoctor
+        {
+            get => _selectedDoctor;
+            set => Set(ref _selectedDoctor, value);
+        }
+
+        public ICommand LoadDataCommand { get; }
+        public ICommand OpenBookingWindowCommand { get; }
+        public ICommand AddDoctorCommand { get; }
+        public ICommand DeleteDoctorCommand { get; }
+        public ICommand DeleteAppointmentCommand { get; }
+
+        private async Task LoadData()
+        {
+            Doctors.Clear();
+            Appointments.Clear();
+
+            var loadedDoctors = await _dataService.GetAllDoctorsAsync();
+            var loadedAppointments = await _dataService.GetAllAppointmentsAsync();
+
+            if (!loadedDoctors.Any())
+            {
+                await SeedData();
+                loadedDoctors = await _dataService.GetAllDoctorsAsync();
+            }
+
+            foreach (var doc in loadedDoctors) Doctors.Add(doc);
+            foreach (var app in loadedAppointments) Appointments.Add(app);
+            
+            SelectedDoctor = Doctors.FirstOrDefault();
+        }
+
+        private async Task AddDoctor()
+        {
+            var newDoc = new Doctor
+            {
+                Id = Guid.NewGuid(),
+                FullName = $"Новий Лікар {Doctors.Count + 1}",
+                Specialization = "Терапевт",
+                Rating = 5.0,
+                ConsultationFee = 400,
+                PhotoUrl = "https://i.pravatar.cc/150",
+                Email = "new.doctor@example.com",
+            };
+            
+            await _dataService.AddDoctorAsync(newDoc);
+            Doctors.Add(newDoc);
+        }
+
+        private async Task DeleteDoctor()
+        {
+            if (SelectedDoctor == null) return;
+            
+            var result = MessageBox.Show($"Видалити {SelectedDoctor.FullName}?", "Підтвердження", MessageBoxButton.YesNo);
+            if (result == MessageBoxResult.Yes)
+            {
+                await _dataService.DeleteDoctorAsync(SelectedDoctor.Id);
+                Doctors.Remove(SelectedDoctor);
+                SelectedDoctor = null;
+            }
+        }
+
+        private async Task DeleteAppointment(object parameter)
+        {
+            if (parameter is Appointment app)
+            {
+                var result = MessageBox.Show("Скасувати запис?", "Підтвердження", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _dataService.DeleteAppointmentAsync(app.Id);
+                    Appointments.Remove(app);
+                }
+            }
+        }
+
+        private void OpenBookingWindow(object parameter)
+        {
+            var bookingViewModel = new BookingViewModel(SelectedDoctor);
+            var bookingWindow = new BookingWindow { DataContext = bookingViewModel };
+            
+            if (bookingWindow.ShowDialog() == true)
+            {
+                var newAppointment = new Appointment
+                {
+                    Id = Guid.NewGuid(),
+                    DoctorId = SelectedDoctor.Id,
+                    DoctorFullName = SelectedDoctor.FullName,
+                    AppointmentTime = bookingViewModel.SelectedDateTime,
+                    Status = AppointmentStatus.Scheduled
+                };
+                
+                _TaskHelper.FireAndForget(async () => 
+                {
+                    await _dataService.AddAppointmentAsync(newAppointment);
+                    Application.Current.Dispatcher.Invoke(() => Appointments.Add(newAppointment));
+                });
+            }
+        }
+
+        private async Task SeedData()
+        {
+             var doc1 = new Doctor { Id = Guid.NewGuid(), FullName = "Петренко Ольга", Specialization = "Терапевт", Rating = 4.8, ConsultationFee = 500, Email = "petrenko@example.com",   PhotoUrl = "https://i.pravatar.cc/150?u=1"  };
+             await _dataService.AddDoctorAsync(doc1);
+        }
+    }
+    
+    public static class _TaskHelper {
+        public static async void FireAndForget(Func<Task> func) {
+            try { await func(); } catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+    }
+}
+
+KPZ_2/Converters/StatusToBrushConverter.cs
+using System;
+using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media;
+using MedTeleHelp.WPF.Models.Enums;
+
+namespace MedTeleHelp.WPF.Converters
+{
+    public class StatusToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is AppointmentStatus status)
+            {
+                switch (status)
+                {
+                    case AppointmentStatus.Scheduled:
+                        return new SolidColorBrush(Colors.Orange);
+                    case AppointmentStatus.Completed:
+                        return new SolidColorBrush(Colors.Green);
+                    case AppointmentStatus.Cancelled:
+                        return new SolidColorBrush(Colors.Red);
+                }
+            }
+            return new SolidColorBrush(Colors.Gray);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+KPZ_2/Views/MainWindow.xaml
+<Window x:Class="MedTeleHelp.WPF.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MedTeleHelp.WPF.ViewModels"
+        xmlns:converters="clr-namespace:MedTeleHelp.WPF.Converters"
+        xmlns:userControls="clr-namespace:MedTeleHelp.WPF.UserControls"
+        mc:Ignorable="d"
+        Title="MedTeleHelp - Панель пацієнта" Height="600" Width="950"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <converters:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="Список лікарів" Style="{StaticResource HeaderTextStyle}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                
+                <Button Command="{Binding AddDoctorCommand}" 
+                        Content="+" FontWeight="Bold" FontSize="16"
+                        Width="30" Height="30" 
+                        Background="ForestGreen" BorderBrush="DarkGreen"
+                        ToolTip="Додати нового лікаря (тест БД)"/>
+                
+                <Button Command="{Binding DeleteDoctorCommand}" 
+                        Content="-" FontWeight="Bold" FontSize="16"
+                        Width="30" Height="30" Margin="10,0,0,0"
+                        Background="Crimson" BorderBrush="DarkRed"
+                        ToolTip="Видалити обраного лікаря"/>
+            </StackPanel>
+
+            <DataGrid Grid.Row="1" ItemsSource="{Binding Doctors}"
+                      SelectedItem="{Binding SelectedDoctor}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      SelectionMode="Single"
+                      BorderThickness="1" BorderBrush="LightGray">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ПІБ" Binding="{Binding FullName}" Width="*"/>
+                    <DataGridTextColumn Header="Спеціалізація" Binding="{Binding Specialization}" Width="*"/>
+                    <DataGridTextColumn Header="Рейтинг" Binding="{Binding Rating}" Width="Auto"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,10">
+                <TextBlock Text="Мої записи на прийом" Style="{StaticResource HeaderTextStyle}"/>
+                <TextBlock Text="(ПКМ для скасування)" FontSize="12" Foreground="Gray" VerticalAlignment="Center" Margin="10,0,0,5"/>
+            </StackPanel>
+
+            <DataGrid Grid.Row="3" ItemsSource="{Binding Appointments}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Скасувати запис" 
+                                  Command="{Binding PlacementTarget.Tag.DeleteAppointmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding}"
+                                  Foreground="Red"/>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Лікар" Binding="{Binding DoctorFullName}" Width="*"/>
+                    <DataGridTextColumn Header="Дата та час" Binding="{Binding AppointmentTime, StringFormat='dd.MM.yyyy HH:mm'}" Width="*"/>
+                    <DataGridTemplateColumn Header="Статус" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status}" 
+                                           FontWeight="Bold" 
+                                           Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+            <TextBlock Text="Деталі лікаря" Style="{StaticResource HeaderTextStyle}"/>
+
+            <userControls:DoctorProfileCard Doctor="{Binding SelectedDoctor}" Margin="0,0,0,20"/>
+
+            <Button Content="Записатись на прийом" 
+                    Command="{Binding OpenBookingWindowCommand}" 
+                    Height="40" FontSize="16"
+                /> 
+
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,30,0,0">
+                <TextBlock Text="Робота з даними:" Foreground="Gray" Margin="0,0,0,5"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Оновити дані" Command="{Binding LoadDataCommand}" Width="120" Margin="0,0,10,0"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
+
+KPZ_2/Views/BookingWindow.xaml
+<Window x:Class="MedTeleHelp.WPF.Views.BookingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:userControls="clr-namespace:MedTeleHelp.WPF.UserControls"
+        mc:Ignorable="d"
+        Title="Запис на прийом" Height="450" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Підтвердження запису" Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center"/>
+            
+            <userControls:DoctorProfileCard Doctor="{Binding SelectedDoctor}" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Оберіть бажану дату та час:" Margin="0,0,0,5"/>
+            <DatePicker SelectedDate="{Binding SelectedDateTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"/>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Підтвердити" 
+                        Command="{Binding ConfirmBookingCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Width="120" Margin="0,0,10,0"/>
+                <Button Content="Скасувати" 
+                        Command="{Binding CancelBookingCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Width="120" Background="Gray"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
+
+KPZ_2/Views/BookingWindow.xaml.cs
+using System.Windows;
+namespace MedTeleHelp.WPF.Views
+{
+    public partial class BookingWindow : Window
+    {
+        public BookingWindow()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+KPZ_2/UserControls/DoctorProfileCard.xaml
+<UserControl x:Class="MedTeleHelp.WPF.UserControls.DoctorProfileCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="300"
+             x:Name="Root">
+    
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation
+                        Storyboard.TargetProperty="Opacity"
+                        From="0.0" 
+                        To="1.0" 
+                        Duration="0:0:1" /> 
+
+                    <ThicknessAnimation
+                        Storyboard.TargetProperty="Margin"
+                        From="0,20,0,0"
+                        To="0"
+                        Duration="0:0:1"
+                        DecelerationRatio="0.9"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
+    
+    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="15">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Профіль лікаря" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            
+            <StackPanel Grid.Row="1" DataContext="{Binding Doctor, ElementName=Root}">
+                <Image Source="{Binding PhotoUrl}" Height="80" Width="80" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding FullName}" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Specialization}" FontStyle="Italic" Foreground="DarkSlateGray" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <TextBlock Text="Рейтинг: "/>
+                    <TextBlock Text="{Binding Rating, StringFormat={}{0:F1}}" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                    <TextBlock Text="Вартість: "/>
+                    <TextBlock Text="{Binding ConsultationFee, StringFormat={}{0:C}, ConverterCulture='uk-UA'}" FontWeight="Bold" Foreground="Green"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
+
+KPZ_2/UserControls/DoctorProfileCard.xaml.cs
+using System.Windows;
+using System.Windows.Controls;
+using MedTeleHelp.WPF.Models;
+
+namespace MedTeleHelp.WPF.UserControls
+{
+    public partial class DoctorProfileCard : UserControl
+    {
+        public static readonly DependencyProperty DoctorProperty =
+            DependencyProperty.Register(
+                "Doctor", 
+                typeof(Doctor), 
+                typeof(DoctorProfileCard), 
+                new PropertyMetadata(null));
+
+        public Doctor Doctor
+        {
+            get => (Doctor)GetValue(DoctorProperty);
+            set => SetValue(DoctorProperty, value);
+        }
+
+        public DoctorProfileCard()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+KPZ_2/ModelsDbFirst/MedTeleHelpDbContext.cs
+using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+
+namespace KPZ_2.ModelsDbFirst;
+
+public partial class MedTeleHelpDbContext : DbContext
+{
+    public MedTeleHelpDbContext()
+    {
+    }
+
+    public MedTeleHelpDbContext(DbContextOptions<MedTeleHelpDbContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Appointment> Appointments { get; set; }
+
+    public virtual DbSet<Doctor> Doctors { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=MSI\\SQLEXPRESS;Database=MedTeleHelpDb;Trusted_Connection=True;TrustServerCertificate=True;");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Appointment>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<Doctor>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.ConsultationFee).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Email).HasDefaultValue("");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}
+
+KPZ_2/ModelsDbFirst/Appointment.cs
+using System;
+using System.Collections.Generic;
+
+namespace KPZ_2.ModelsDbFirst;
+
+public partial class Appointment
+{
+    public Guid Id { get; set; }
+
+    public Guid DoctorId { get; set; }
+
+    public string DoctorFullName { get; set; } = null!;
+
+    public DateTime AppointmentTime { get; set; }
+
+    public int Status { get; set; }
+}
+
+KPZ_2/ModelsDbFirst/Doctor.cs
+using System;
+using System.Collections.Generic;
+
+namespace KPZ_2.ModelsDbFirst;
+
+public partial class Doctor
+{
+    public Guid Id { get; set; }
+
+    public string FullName { get; set; } = null!;
+
+    public string Specialization { get; set; } = null!;
+
+    public double Rating { get; set; }
+
+    public decimal ConsultationFee { get; set; }
+
+    public string PhotoUrl { get; set; } = null!;
+
+    public string Email { get; set; } = null!;
+}
+
+KPZ_2/Migrations/20251127183346_InitialCreate.cs
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace KPZ_2.Migrations
+{
+    /// <inheritdoc />
+    public partial class InitialCreate : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Appointments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DoctorFullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AppointmentTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Appointments", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Doctors",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Specialization = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rating = table.Column<double>(type: "float", nullable: false),
+                    ConsultationFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Doctors", x => x.Id);
+                });
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "Appointments");
+
+            migrationBuilder.DropTable(
+                name: "Doctors");
+        }
+    }
+}
+
+KPZ_2/Migrations/20251127183346_InitialCreate.Designer.cs
+// <auto-generated />
+using System;
+using MedTeleHelp.WPF.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace KPZ_2.Migrations
+{
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20251127183346_InitialCreate")]
+    partial class InitialCreate
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AppointmentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorFullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Doctor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ConsultationFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Doctors");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+
+KPZ_2/Migrations/20251127184319_AddDoctorEmail.cs
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace KPZ_2.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddDoctorEmail : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "Email",
+                table: "Doctors",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "Email",
+                table: "Doctors");
+        }
+    }
+}
+
+KPZ_2/Migrations/20251127184319_AddDoctorEmail.Designer.cs
+// <auto-generated />
+using System;
+using MedTeleHelp.WPF.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace KPZ_2.Migrations
+{
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20251127184319_AddDoctorEmail")]
+    partial class AddDoctorEmail
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AppointmentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorFullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Doctor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ConsultationFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Doctors");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+
+KPZ_2/Migrations/AppDbContextModelSnapshot.cs
+// <auto-generated />
+using System;
+using MedTeleHelp.WPF.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace KPZ_2.Migrations
+{
+    [DbContext(typeof(AppDbContext))]
+    partial class AppDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AppointmentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorFullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("MedTeleHelp.WPF.Models.Doctor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ConsultationFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Doctors");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
