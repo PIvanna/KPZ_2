@@ -14,6 +14,7 @@ namespace MedTeleHelp.WPF.Services
 
         Task<List<Appointment>> GetAllAppointmentsAsync();
         Task AddAppointmentAsync(Appointment appointment);
+        Task UpdateAppointmentAsync(Appointment appointment);
         Task DeleteAppointmentAsync(Guid id);
 
         // НОВИЙ МЕТОД: Виклик збереженої процедури
