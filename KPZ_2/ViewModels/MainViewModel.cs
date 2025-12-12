@@ -35,6 +35,8 @@ namespace MedTeleHelp.WPF.ViewModels
             AddDoctorCommand = new RelayCommand(async _ => await AddDoctor());
             DeleteDoctorCommand = new RelayCommand(async _ => await DeleteDoctor(), _ => SelectedDoctor != null);
             DeleteAppointmentCommand = new RelayCommand(async p => await DeleteAppointment(p));
+            MarkAppointmentCompletedCommand = new RelayCommand(async p => await UpdateAppointmentStatus(p, AppointmentStatus.Completed));
+            MarkAppointmentCancelledCommand = new RelayCommand(async p => await UpdateAppointmentStatus(p, AppointmentStatus.Cancelled));
             
             FilterDoctorsCommand = new RelayCommand(async _ => await FilterDoctors());
             ResetFilterCommand = new RelayCommand(async _ => await LoadData());
@@ -57,6 +59,8 @@ namespace MedTeleHelp.WPF.ViewModels
         public ICommand AddDoctorCommand { get; }
         public ICommand DeleteDoctorCommand { get; }
         public ICommand DeleteAppointmentCommand { get; }
+        public ICommand MarkAppointmentCompletedCommand { get; }
+        public ICommand MarkAppointmentCancelledCommand { get; }
         
         public ICommand FilterDoctorsCommand { get; }
         public ICommand ResetFilterCommand { get; }
@@ -136,6 +140,14 @@ namespace MedTeleHelp.WPF.ViewModels
                     Appointments.Remove(app);
                 }
             }
+        }
+
+        private async Task UpdateAppointmentStatus(object parameter, AppointmentStatus newStatus)
+        {
+            if (parameter is not Appointment app) return;
+
+            app.Status = newStatus;
+            await _dataService.UpdateAppointmentAsync(app);
         }
 
         private void OpenBookingWindow(object parameter)

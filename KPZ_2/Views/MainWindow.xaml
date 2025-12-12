@@ -66,6 +66,13 @@
                       AutoGenerateColumns="False" IsReadOnly="True">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Позначити як виконано"
+                                  Command="{Binding MarkAppointmentCompletedCommand}"
+                                  CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
+                        <MenuItem Header="Змінити статус: Cancelled"
+                                  Command="{Binding MarkAppointmentCancelledCommand}"
+                                  CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
+                        <Separator/>
                         <MenuItem Header="Скасувати запис" 
                                   Command="{Binding DeleteAppointmentCommand}" 
                                   CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
