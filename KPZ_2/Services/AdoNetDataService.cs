@@ -118,6 +118,21 @@ namespace MedTeleHelp.WPF.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task UpdateAppointmentAsync(Appointment appointment)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql =
+                "UPDATE Appointments SET DoctorId=@DocId, DoctorFullName=@DocName, AppointmentTime=@Time, Status=@Status WHERE Id=@Id";
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", appointment.Id);
+            cmd.Parameters.AddWithValue("@DocId", appointment.DoctorId);
+            cmd.Parameters.AddWithValue("@DocName", appointment.DoctorFullName);
+            cmd.Parameters.AddWithValue("@Time", appointment.AppointmentTime);
+            cmd.Parameters.AddWithValue("@Status", (int)appointment.Status);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
         public async Task DeleteAppointmentAsync(Guid id)
         {
             using var conn = new SqlConnection(_connectionString);

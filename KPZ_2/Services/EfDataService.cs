@@ -51,6 +51,12 @@ namespace MedTeleHelp.WPF.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateAppointmentAsync(Appointment appointment)
+        {
+            _context.Appointments.Update(appointment);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteAppointmentAsync(Guid id)
         {
             var app = await _context.Appointments.FindAsync(id);
