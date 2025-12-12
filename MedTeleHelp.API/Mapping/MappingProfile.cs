@@ -17,6 +17,9 @@ namespace MedTeleHelp.API.Mapping
             CreateMap<AppointmentCreateVm, Appointment>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => 0));
+
+            CreateMap<AppointmentUpdateVm, Appointment>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status));
             
         }
     }

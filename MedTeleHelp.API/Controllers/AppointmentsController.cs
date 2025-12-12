@@ -77,6 +77,35 @@ namespace MedTeleHelp.API.Controllers
             return CreatedAtAction(nameof(GetAppointment), new { id = appointment.Id }, appointment);
         }
 
+        // PUT: api/Appointments/5
+        /// <summary>
+        /// Оновити запис (час/лікар/статус)
+        /// </summary>
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAppointment(Guid id, [FromBody] AppointmentUpdateVm vm)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            var doctor = await _context.Doctors.FindAsync(vm.DoctorId);
+            if (doctor == null)
+            {
+                return BadRequest("Лікаря з таким ID не знайдено.");
+            }
+
+            _mapper.Map(vm, appointment);
+            appointment.DoctorFullName = doctor.FullName;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         // DELETE: api/Appointments/5
         /// <summary>
         /// Скасувати (видалити) запис
