@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MedTeleHelp.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4306396ac9324d571e2ef1adbbb536f93b726566")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+968195bba75b7f88c2998476e25e51308623a548")]
 [assembly: System.Reflection.AssemblyProductAttribute("MedTeleHelp.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MedTeleHelp.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

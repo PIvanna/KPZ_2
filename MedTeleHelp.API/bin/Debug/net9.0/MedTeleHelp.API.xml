@@ -22,6 +22,16 @@
             Потрібно передати ID лікаря та час. Ім'я лікаря підтягнеться автоматично.
             </remarks>
         </member>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.GetAppointmentsByDoctor(System.Guid)">
+            <summary>
+            Отримати всі записи до конкретного лікаря
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.UpdateAppointmentStatus(System.Guid,System.Int32)">
+            <summary>
+            Оновити статус запису
+            </summary>
+        </member>
         <member name="M:MedTeleHelp.API.Controllers.AppointmentsController.DeleteAppointment(System.Guid)">
             <summary>
             Скасувати (видалити) запис
@@ -35,6 +45,11 @@
         <member name="M:MedTeleHelp.API.Controllers.DoctorsController.GetDoctor(System.Guid)">
             <summary>
             Отримати лікаря за ID
+            </summary>
+        </member>
+        <member name="M:MedTeleHelp.API.Controllers.DoctorsController.SearchDoctors(System.String,System.String)">
+            <summary>
+            Пошук лікарів за спеціалізацією або ім'ям
             </summary>
         </member>
         <member name="M:MedTeleHelp.API.Controllers.DoctorsController.CreateDoctor(MedTeleHelp.API.ViewModels.DoctorCreateVm)">

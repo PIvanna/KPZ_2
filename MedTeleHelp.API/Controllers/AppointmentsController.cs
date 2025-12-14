@@ -77,6 +77,39 @@ namespace MedTeleHelp.API.Controllers
             return CreatedAtAction(nameof(GetAppointment), new { id = appointment.Id }, appointment);
         }
 
+        // GET: api/Appointments/doctor/{doctorId}
+        /// <summary>
+        /// Отримати всі записи до конкретного лікаря
+        /// </summary>
+        [HttpGet("doctor/{doctorId}")]
+        public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointmentsByDoctor(Guid doctorId)
+        {
+             var appointments = await _context.Appointments
+                .Where(a => a.DoctorId == doctorId)
+                .ToListAsync();
+
+            return appointments;
+        }
+
+        // PUT: api/Appointments/{id}/status
+        /// <summary>
+        /// Оновити статус запису
+        /// </summary>
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateAppointmentStatus(Guid id, [FromBody] int status)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            appointment.Status = status;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         // DELETE: api/Appointments/5
         /// <summary>
         /// Скасувати (видалити) запис
