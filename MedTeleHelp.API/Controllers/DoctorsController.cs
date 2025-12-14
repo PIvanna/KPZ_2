@@ -47,6 +47,28 @@ namespace MedTeleHelp.API.Controllers
             return doctor;
         }
 
+        // GET: api/Doctors/search
+        /// <summary>
+        /// Пошук лікарів за спеціалізацією або ім'ям
+        /// </summary>
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Doctor>>> SearchDoctors([FromQuery] string? name, [FromQuery] string? specialization)
+        {
+            var query = _context.Doctors.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(d => d.FullName.Contains(name));
+            }
+
+            if (!string.IsNullOrEmpty(specialization))
+            {
+                query = query.Where(d => d.Specialization.Contains(specialization));
+            }
+
+            return await query.ToListAsync();
+        }
+
         // POST: api/Doctors
         /// <summary>
         /// Створити нового лікаря
